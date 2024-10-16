@@ -1,0 +1,78 @@
+import random
+import tkinter as tk
+from tkinter import messagebox
+
+# List of words for the Hangman game
+words = ['python', 'java', 'kotlin', 'javascript', 'hangman', 'developer']
+
+# Function to select a random word from the list
+def select_word():
+    return random.choice(words)
+
+# Function to update the word display
+def update_display():
+    display = ' '.join([letter if letter in guessed_letters else '_' for letter in word])
+    word_label.config(text=display)
+    attempts_label.config(text=f"Incorrect guesses remaining: {attempts}")
+    guessed_label.config(text=f"Guessed letters: {', '.join(guessed_letters.union(incorrect_guesses))}")
+
+# Function to handle player input
+def guess_letter():
+    global attempts
+    guess = guess_entry.get().lower()
+    guess_entry.delete(0, tk.END)
+
+    if len(guess) != 1 or not guess.isalpha():
+        messagebox.showwarning("Invalid Input", "Please enter a single valid letter.")
+        return
+
+    if guess in guessed_letters or guess in incorrect_guesses:
+        messagebox.showinfo("Duplicate Guess", "You've already guessed that letter.")
+        return
+
+    if guess in word:
+        guessed_letters.add(guess)
+        if set(word) == guessed_letters:
+            messagebox.showinfo("Congratulations!", f"You've guessed the word: {word}")
+            root.quit()
+    else:
+        incorrect_guesses.add(guess)
+        attempts -= 1
+        if attempts == 0:
+            messagebox.showinfo("Game Over", f"The word was: {word}")
+            root.quit()
+
+    update_display()
+
+# Tkinter setup
+root = tk.Tk()
+root.title("Hangman Game")
+
+# Initialize game variables
+word = select_word()
+guessed_letters = set()
+incorrect_guesses = set()
+attempts = 6
+
+# Word display label
+word_label = tk.Label(root, text="_ " * len(word), font=("Arial", 24))
+word_label.pack(pady=20)
+
+# Entry for letter guesses
+guess_entry = tk.Entry(root, font=("Arial", 18))
+guess_entry.pack(pady=10)
+
+# Button to submit guesses
+guess_button = tk.Button(root, text="Guess", font=("Arial", 18), command=guess_letter)
+guess_button.pack(pady=10)
+
+# Display for remaining attempts and guessed letters
+attempts_label = tk.Label(root, text=f"Incorrect guesses remaining: {attempts}", font=("Arial", 14))
+attempts_label.pack(pady=10)
+
+guessed_label = tk.Label(root, text="Guessed letters: ", font=("Arial", 14))
+guessed_label.pack(pady=10)
+
+# Start the game loop
+update_display()
+root.mainloop()
